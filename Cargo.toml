@@ -2,7 +2,7 @@
 name = "goldberg"
 description = "A Rust-based obfuscation macro library!"
 repository = "https://github.com/frank2/goldberg"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["frank2@dc949.org"]
 edition = "2021"
 license = "GPL-3.0"
@@ -14,9 +14,12 @@ documentation = "https://docs.rs/goldberg"
 [lib]
 proc-macro = true
 
+[patch.crates-io]
+moisture = { git = "https://github.com/dvtomas/moisture", branch = "main" }
+
 [dependencies]
-moisture = "0.1.0"
-proc-macro2 = "1.0.36"
-quote = "1.0.17"
-rand = "0.8.5"
-syn = { version = "1.0.91", features = ["full", "extra-traits"] }
+moisture = "0"
+proc-macro2 = "1"
+quote = "1"
+rand = "0.9"
+syn = { version = "1", features = ["full", "extra-traits"] }

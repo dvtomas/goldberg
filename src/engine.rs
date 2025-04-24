@@ -5,6 +5,9 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, quote_spanned, ToTokens};
 
 use rand::prelude::*;
+use rand::random;
+use rand::distr::Uniform;
+
 
 use syn::*;
 use syn::parse::Parser;
@@ -80,7 +83,7 @@ pub fn loop_match(statements: &Vec<TokenStream>) -> TokenStream {
         keyed_streams.push((ident, key, statements[i].clone()));
     }
 
-    let mut rng = thread_rng();
+    let mut rng = rand::rng();
     keyed_streams.as_mut_slice().shuffle(&mut rng);
 
     let mut identified_streams = Vec::<TokenStream>::new();
@@ -464,8 +467,16 @@ impl IntOperand {
             IntType::U64 => Self::U64(random::<u64>()),
             IntType::I128 => Self::I128(random::<i128>()),
             IntType::U128 => Self::U128(random::<u128>()),
-            IntType::Isize => Self::Isize(random::<isize>()),
-            IntType::Usize => Self::Usize(random::<usize>()),
+            IntType::Isize => {
+							let mut rng = rand::rng();
+							let val: i64 = rng.random_range(isize::MIN as i64..=isize::MAX as i64);
+							Self::Isize(val.try_into().unwrap())
+						}
+            IntType::Usize => {
+							let mut rng = rand::rng();
+							let val: u64 = rng.random_range(usize::MIN as u64..=usize::MAX as u64);
+							Self::Usize(val.try_into().unwrap())
+						}
         }
     }
     pub fn add(&self, op: Self) -> Self {
@@ -811,11 +822,11 @@ pub fn lit_int_handler(moisture: &Moisture, context: &Context, tokens: TokenStre
 
 pub fn lit_int_obfu(moisture: &Moisture, context: &Context, lit: &LitInt) -> Result<TokenStream> {
     let int_type = IntType::from_suffix(lit.suffix());
-    let op_count = random::<usize>() % 10 + 5;
+    let op_count = random::<u64>() % 10 + 5;
     let mut operations = Vec::<IntOperation>::new();
     let mut calc_op = IntOperand::from(lit.clone());
 
-    while operations.len() < op_count {
+    while (operations.len() as u64) < op_count {
         let new_op = IntOperation::random(int_type);
         
         calc_op = new_op.perform(calc_op);
